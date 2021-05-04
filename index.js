@@ -1,11 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
+const cors = require('cors')
 const bodyParser = require('body-parser')
 const usersService = require('./user.service')
 const { resolve } = require('path')
 
 const app = express()
+app.use(cors())
 app.use(bodyParser.json())
 
 const readFileName = () => {
