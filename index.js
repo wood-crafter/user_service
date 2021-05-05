@@ -10,9 +10,9 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
-const readFileName = () => {
+const readTextFileName = () => {
   return new Promise((resolve, reject) => {
-    fs.readdir('songs', (e, files) => {
+    fs.readdir('texts', (e, files) => {
       if (e) {
         console.error(e)
         reject(500)
@@ -23,9 +23,62 @@ const readFileName = () => {
   })
 }
 
-app.get('/files', (req, res) => {
+const readSongsName = () => {
+  return new Promise((resolve, reject) => {
+    fs.readdir('mp4', (e, files) => {
+      if (e) {
+        console.error(e)
+        reject(500)
+      } else {
+        resolve(files)
+      }
+    })
+  })
+}
 
-  readFileName()
+app.get('/downloadText/:filename', function (req, res) {
+  const filename = req.params.filename
+  const filePath = path.join(__dirname, 'texts', filename)
+  // res.download(filePath)
+
+  fs.access(filePath, fs.constants.R_OK, (err) => {
+    if (err) {
+      console.error(err)
+      return res.sendStatus(err.code === 'ENOENT' ? 404 : 500)
+    }
+
+    // `res.download` same same `res.end()`
+    res.download(filePath)
+
+    // App cua e n chet tu request dau, nen khong nhan duoc request sau
+    // Got it...?
+    // 
+  })
+})
+
+app.get('/downloadSong/:filename', function (req, res) {
+  const filename = req.params.filename
+  const filePath = path.join(__dirname, 'mp4', filename)
+  // res.download(filePath)
+
+  fs.access(filePath, fs.constants.R_OK, (err) => {
+    if (err) {
+      console.error(err)
+      return res.sendStatus(err.code === 'ENOENT' ? 404 : 500)
+    }
+
+    // `res.download` same same `res.end()`
+    res.download(filePath)
+
+    // App cua e n chet tu request dau, nen khong nhan duoc request sau
+    // Got it...?
+    // 
+  })
+})
+
+app.get('/mp4', (req, res) => {
+
+  readSongsName()
     .then(files => {
       console.info(files)
       res.send(files)
@@ -36,9 +89,38 @@ app.get('/files', (req, res) => {
     })
 })
 
-app.get('/files/:filename', (req, res) => {
+app.get('/mp4/:filename', (req, res) => {
   const filename = req.params.filename
-  const filePath = path.join(__dirname, 'songs', filename)
+  const filePath = path.join(__dirname, 'mp4', filename)
+
+  fs.readFile(filePath, (e, buffer) => {
+    if(e){
+      console.log(e)
+      res.sendStatus(e.code === 'ENOENT' ? 404 : 500)
+      return
+    }
+
+    res.writeHead(200, {'Content-Type' : 'video/mp4'})
+    res.end(buffer)
+  })
+})
+
+app.get('/texts', (req, res) => {
+
+  readTextFileName()
+    .then(files => {
+      console.info(files)
+      res.send(files)
+    })
+    .catch(statusCode => {
+      console.error(statusCode)
+      res.sendStatus(500)
+    })
+})
+
+app.get('/texts/:filename', (req, res) => {
+  const filename = req.params.filename
+  const filePath = path.join(__dirname, 'texts', filename)
 
   fs.access(filePath, fs.constants.R_OK, (err) => {
     if (err) {
@@ -46,14 +128,7 @@ app.get('/files/:filename', (req, res) => {
       return res.sendStatus(err.code === 'ENOENT' ? 404 : 400)
     }
 
-    res.sendFile(filePath, (e) => {
-      if (e) {
-        console.error(e)
-        return res.sendStatus(500)
-      }
-
-      console.info('Sent file')
-    })
+    res.sendFile(filePath)
   })
 })
 
@@ -90,13 +165,13 @@ app.put('/users', (req, res) => {
       })
     })
 
-    updateUserService
-      .then(() => {
-        res.sendStatus(200)
-      })
-      .catch(errorCode => {
-        res.sendStatus(errorCode)
-      })
+  updateUserService
+    .then(() => {
+      res.sendStatus(200)
+    })
+    .catch(errorCode => {
+      res.sendStatus(errorCode)
+    })
 })
 
 
