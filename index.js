@@ -36,7 +36,7 @@ const readSongsName = () => {
   })
 }
 
-app.get('/downloadText/:filename', function (req, res) {
+app.get('/download/:filename', function (req, res) {
   const filename = req.params.filename
   const filePath = path.join(__dirname, 'texts', filename)
   // res.download(filePath)
@@ -46,33 +46,7 @@ app.get('/downloadText/:filename', function (req, res) {
       console.error(err)
       return res.sendStatus(err.code === 'ENOENT' ? 404 : 500)
     }
-
-    // `res.download` same same `res.end()`
     res.download(filePath)
-
-    // App cua e n chet tu request dau, nen khong nhan duoc request sau
-    // Got it...?
-    // 
-  })
-})
-
-app.get('/downloadSong/:filename', function (req, res) {
-  const filename = req.params.filename
-  const filePath = path.join(__dirname, 'mp4', filename)
-  // res.download(filePath)
-
-  fs.access(filePath, fs.constants.R_OK, (err) => {
-    if (err) {
-      console.error(err)
-      return res.sendStatus(err.code === 'ENOENT' ? 404 : 500)
-    }
-
-    // `res.download` same same `res.end()`
-    res.download(filePath)
-
-    // App cua e n chet tu request dau, nen khong nhan duoc request sau
-    // Got it...?
-    // 
   })
 })
 
